@@ -51,13 +51,13 @@ CI 不连接线上 Supabase，避免测试污染 demo 数据。
 ```txt
 DATABASE_URL=postgresql://...
 DIRECT_URL=postgresql://...
-NEXT_PUBLIC_APP_URL=https://<vercel-domain>
+NEXT_PUBLIC_APP_URL=https://healthgate-one.vercel.app
 ```
 
 说明：
 
 - `DATABASE_URL` 用 pooled connection，给运行时 API 使用。
-- `DIRECT_URL` 用 direct connection，给 Prisma migration 使用。
+- `DIRECT_URL` 在 Vercel build 中供 Prisma generate 读取；当前线上也配置为 pooled connection。
 - `NEXT_PUBLIC_APP_URL` 用于 README/cURL 示例和跳转 URL 生成。
 
 ### GitHub Actions
@@ -79,14 +79,17 @@ DIRECT_URL=postgresql://postgres:postgres@localhost:5432/healthgate_test
 
 ```txt
 PRODUCTION_DATABASE_URL=postgresql://...    # Supabase pooled/runtime connection
-PRODUCTION_DIRECT_URL=postgresql://...      # Supabase direct migration connection
-PRODUCTION_APP_URL=https://<vercel-domain>
+PRODUCTION_DIRECT_URL=postgresql://...      # Prisma env contract; current workflow does not use it for migration
+PRODUCTION_APP_URL=https://healthgate-one.vercel.app
+SUPABASE_ACCESS_TOKEN=...
+SUPABASE_DB_PASSWORD=...
 ```
 
 说明：
 
 - `production` environment 建议开启 required reviewers，避免误触发。
 - 这些 secrets 只给手动 production workflow 使用，不给普通 PR CI 使用。
+- production migration 通过 Supabase CLI `db push --linked` 执行，使用 `SUPABASE_ACCESS_TOKEN` 和 `SUPABASE_DB_PASSWORD`。
 - 不需要 Supabase service role key；后端只通过 Prisma 使用数据库连接串。
 - 前端永远不暴露数据库连接串或 Supabase service role key。
 
@@ -95,13 +98,13 @@ PRODUCTION_APP_URL=https://<vercel-domain>
 推荐顺序是：
 
 ```txt
-生成并提交 migration -> CI 通过 -> 手动 production migrate -> Vercel deploy -> 手动 seed demo -> smoke 验收 -> 更新 README
+生成并提交 migration -> CI 通过 -> Supabase CLI production migrate -> Vercel deploy -> seed demo -> smoke 验收 -> 更新 README
 ```
 
 关键判断：
 
 - migration 文件必须随仓库提交，不能在 Vercel build 中临时生成。
-- `prisma migrate deploy` 必须在 production database 上显式执行。
+- production migration 必须显式执行；本项目使用 Supabase CLI `db push --linked`，不在 Vercel build 中自动迁移。
 - Vercel build 可以执行 `prisma generate && next build`，但不负责改变数据库结构。
 - production migration 和 seed 由手动触发 workflow 执行，不绑定每次 push，也不绑定 Vercel build。
 - 如果未来出现非兼容 schema 变更，先做向后兼容迁移，再发布代码，最后清理旧字段；本挑战第一版 migration 可以直接初始化。
@@ -112,8 +115,8 @@ PRODUCTION_APP_URL=https://<vercel-domain>
 
 1. 创建 Supabase project。
 2. 获取 pooled connection string，配置为 `DATABASE_URL`。
-3. 获取 direct connection string，配置为 `DIRECT_URL`。
-4. 在 Vercel 设置同名环境变量。
+3. 在 Vercel 设置 `DATABASE_URL`、`DIRECT_URL`、`NEXT_PUBLIC_APP_URL`。
+4. 在 GitHub `production` environment 设置 Supabase token、数据库密码和 production DB URL。
 
 ### 2. 准备 Prisma migration
 
@@ -177,6 +180,9 @@ jobs:
       DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
       DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL }}
       NEXT_PUBLIC_APP_URL: ${{ secrets.PRODUCTION_APP_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: lwqiuuymeqdkiwnebkey
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -185,9 +191,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run prisma:generate
+      - name: Link Supabase project
+        if: inputs.operation == 'migrate' || inputs.operation == 'migrate-and-seed'
+        run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --yes
       - name: Run production migrations
         if: inputs.operation == 'migrate' || inputs.operation == 'migrate-and-seed'
-        run: npx prisma migrate deploy
+        run: npx supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --yes
       - name: Seed demo sessions
         if: inputs.operation == 'seed-demo' || inputs.operation == 'migrate-and-seed'
         run: npm run seed:demo
@@ -206,17 +215,17 @@ jobs:
 - `confirm` 必须输入固定字符串，降低误触发概率。
 - `seed:demo` 必须幂等，重复执行不能创建无限重复 demo 数据。
 
-生产迁移实际执行的命令仍然是：
+生产迁移实际执行的命令是：
 
 ```txt
-npx prisma migrate deploy
+npx supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --yes
 ```
 
 不在 Vercel build 中隐式创建 migration。Vercel build 可以执行 `prisma generate`，但不负责 schema 变更。
 
 ### 5. 部署 Vercel
 
-推荐 Vercel 连接 GitHub repo：
+当前 production 使用 Vercel CLI 部署；如果后续要启用 push 自动部署，再在 Vercel 账号里补 GitHub login connection。
 
 ```txt
 Build Command: npm run build
@@ -228,6 +237,12 @@ Install Command: npm ci
 
 ```txt
 prisma generate && next build
+```
+
+本次线上地址：
+
+```txt
+https://healthgate-one.vercel.app
 ```
 
 ### 6. Seed demo sessions
@@ -264,7 +279,7 @@ PAID_DEMO_SESSION_ID=<uuid>
 README 最终必须提供：
 
 ```bash
-BASE_URL="https://<vercel-domain>"
+BASE_URL="https://healthgate-one.vercel.app"
 
 curl -X POST "$BASE_URL/api/sessions" \
   -H "Content-Type: application/json" \
@@ -437,8 +452,8 @@ README 必须说明完整 E2E 运行方式。
 
 | 风险 | 处理 |
 | --- | --- |
-| Supabase 连接数过多 | Runtime 用 pooled connection，migration 用 direct URL |
-| Migration 未执行 | README 写明 `prisma migrate deploy`，CI/build 检查 Prisma generate |
+| Supabase 连接数过多 | Runtime 用 pooled connection，生产迁移走 Supabase CLI |
+| Migration 未执行 | README 写明 production workflow，CI/build 检查 Prisma generate |
 | 评审无法复现支付 | README 提供 `/pay` cURL 和 demo sessionId |
 | Demo 数据被测试污染 | CI 使用独立 PostgreSQL service，不连 production |
 | production workflow 被误触发 | 仅 `workflow_dispatch` + `production` environment approval + confirm 输入 |
@@ -449,12 +464,12 @@ README 必须说明完整 E2E 运行方式。
 
 ## 当前状态
 
-- 部署策略：已设计。
-- Vercel 项目：待创建/绑定。
-- Supabase project：待创建。
-- Migration：待实现后生成。
-- Demo seed：待实现。
-- CI workflow：待实现。
-- Production maintenance workflow：待实现。
-- Public URL：待部署后补入 README。
-- 上线 smoke：待部署后执行。
+- 部署策略：已设计并按当前方案执行。
+- Vercel 项目：已创建并发布到 https://healthgate-one.vercel.app。
+- Supabase project：已创建并完成 migration。
+- Migration：已生成并同步到 `supabase/migrations/20260610000000_init.sql`。
+- Demo seed：已执行，README 已写入未支付/已支付 demo sessionId。
+- CI workflow：已通过，run 为 https://github.com/77652189/healthGate/actions/runs/27260027467。
+- Production maintenance workflow：已切换为 Supabase CLI migration。
+- Public URL：已写入 README。
+- 上线 smoke：已通过 `/api/health`、demo preview/full、全新 session `/pay` 闭环验证。

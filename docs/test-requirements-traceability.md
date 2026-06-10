@@ -9,7 +9,7 @@
 - 设计覆盖：已完成。
 - 测试代码：已实现。
 - CI workflow：已实现。
-- README 测试说明：已更新，公网 URL 与 CI badge 状态待部署/推送后确认。
+- README 测试说明：已更新，公网 URL、CI run 和 demo sessionId 已回填。
 
 这份矩阵后续应成为 README 测试覆盖说明和实现任务拆分的来源。
 

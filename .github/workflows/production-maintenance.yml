@@ -24,6 +24,9 @@ jobs:
       DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
       DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL }}
       NEXT_PUBLIC_APP_URL: ${{ secrets.PRODUCTION_APP_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: lwqiuuymeqdkiwnebkey
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,10 +35,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run prisma:generate
+      - name: Link Supabase project
+        if: inputs.operation == 'migrate' || inputs.operation == 'migrate-and-seed'
+        run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --yes
       - name: Run production migrations
         if: inputs.operation == 'migrate' || inputs.operation == 'migrate-and-seed'
-        run: npx prisma migrate deploy
+        run: npx supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --yes
       - name: Seed demo sessions
         if: inputs.operation == 'seed-demo' || inputs.operation == 'migrate-and-seed'
         run: npm run seed:demo
-

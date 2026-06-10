@@ -4,8 +4,11 @@
 coverage
 test-results
 playwright-report
+supabase/.temp
 node_modules
 dist
 *.tsbuildinfo
 prisma/dev.db
 prisma/dev.db-journal
+
+.vercel

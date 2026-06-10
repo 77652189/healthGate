@@ -4,14 +4,15 @@
 
 HealthGate 是一个健康测评 funnel 全栈挑战项目，重点展示分步持久化、服务端健康评估、订阅鉴权、模拟支付闭环和自动化测试。
 
-> 当前状态：核心实现、测试、CI workflow、生产维护 workflow 已完成。公网 Live URL 与 demo sessionId 待 Vercel/Supabase 部署后补入。
+> 当前状态：核心实现、自动化测试、CI、Supabase PostgreSQL、Vercel 公网部署和线上 smoke 验收均已完成。
 
 ## Live Demo
 
-- Live URL：待部署后补入
+- Live URL：https://healthgate-one.vercel.app
 - GitHub Repo：https://github.com/77652189/healthGate
-- UNPAID_DEMO_SESSION_ID：待 `seed-demo` 后补入
-- PAID_DEMO_SESSION_ID：待 `seed-demo` 后补入
+- CI Status：https://github.com/77652189/healthGate/actions/runs/27260027467
+- UNPAID_DEMO_SESSION_ID：`00000000-0000-4000-8000-000000000001`
+- PAID_DEMO_SESSION_ID：`00000000-0000-4000-8000-000000000002`
 
 ## Reviewer Quick Path
 
@@ -24,7 +25,7 @@ HealthGate 是一个健康测评 funnel 全栈挑战项目，重点展示分步�
 API 复现路径：
 
 ```bash
-BASE_URL="https://<vercel-domain>"
+BASE_URL="https://healthgate-one.vercel.app"
 
 curl -X POST "$BASE_URL/api/sessions" \
   -H "Content-Type: application/json" \
@@ -151,7 +152,7 @@ DIRECT_URL=
 NEXT_PUBLIC_APP_URL=
 ```
 
-Vercel runtime 使用 Supabase pooled connection；Prisma migration 使用 direct connection。
+Vercel runtime 使用 Supabase pooled connection。生产迁移由手动 GitHub Actions workflow 调用 Supabase CLI `db push`，避免把 migration 绑定到 Vercel build。
 
 ## Test & Quality
 
@@ -195,6 +196,8 @@ npm run test:ci
 PRODUCTION_DATABASE_URL=
 PRODUCTION_DIRECT_URL=
 PRODUCTION_APP_URL=
+SUPABASE_ACCESS_TOKEN=
+SUPABASE_DB_PASSWORD=
 ```
 
 部署后执行：
@@ -223,4 +226,3 @@ PAID_DEMO_SESSION_ID=00000000-0000-4000-8000-000000000002
 - [测试要求可追踪矩阵](./docs/test-requirements-traceability.md)
 - [AI 协作复盘](./docs/ai-collaboration-review.md)
 - [实现路线图](./docs/implementation-roadmap.md)
-

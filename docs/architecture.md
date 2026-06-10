@@ -639,13 +639,13 @@ flowchart LR
 ```txt
 DATABASE_URL=postgresql://...
 DIRECT_URL=postgresql://...
-NEXT_PUBLIC_APP_URL=https://<vercel-domain>
+NEXT_PUBLIC_APP_URL=https://healthgate-one.vercel.app
 ```
 
 Supabase 连接策略：
 
 - `DATABASE_URL` 可使用 pooled connection。
-- `DIRECT_URL` 用 direct connection，供 Prisma migrate 使用。
+- `DIRECT_URL` 保留给 Prisma env contract；当前线上与 `DATABASE_URL` 一样使用 pooled connection。
 - 如果 Supabase pooler 与 Prisma prepared statements 有兼容要求，在连接串中按 Supabase/Prisma 官方建议配置 pooler 参数。
 
 ### 数据库迁移策略
@@ -655,7 +655,7 @@ Supabase 连接策略：
 ```txt
 local dev -> prisma migrate dev
 CI -> postgres service + prisma migrate deploy + tests
-production release -> prisma migrate deploy
+production release -> supabase db push --linked
 ```
 
 Vercel build 不应隐式创建 migration。迁移脚本必须随仓库提交。
@@ -687,8 +687,8 @@ seed 创建：
 | 风险 | 处理 |
 | --- | --- |
 | Vercel serverless 冷启动 | API 保持轻量，算法本地纯计算 |
-| Prisma 连接数过多 | 使用 Supabase pooled connection，migration 使用 direct URL |
-| 迁移未执行 | README 写明 `prisma migrate deploy`，CI/build 检查 Prisma generate |
+| Prisma 连接数过多 | 使用 Supabase pooled connection，生产迁移走 Supabase CLI |
+| 迁移未执行 | README 写明 production workflow，CI/build 检查 Prisma generate |
 | 评审无法复现支付 | README 提供 `/pay` cURL 和 demo sessionId |
 | cookie 在跨设备不可用 | URL 和 README 均支持显式 `sessionId` |
 | 线上错误难排查 | 提供 `/api/health`，API 错误结构统一 |

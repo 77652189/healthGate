@@ -514,8 +514,8 @@ README /pay cURL 重放
 - 阶段 6：已完成，前端 funnel/result 已接真实 API。
 - 阶段 7：已完成，Playwright E2E 通过。
 - 阶段 8：已完成，CI workflow 和 production-maintenance workflow 已加入仓库。
-- 阶段 9：待执行，需创建 Supabase/Vercel 并运行 production workflow。
-- 阶段 10：部分完成，README 已更新；公网 URL、CI badge 实际状态和 demo sessionId 待部署后补齐。
+- 阶段 9：已完成，Supabase/Vercel 已创建，production migration 和 demo seed 已执行。
+- 阶段 10：已完成，README 已回填公网 URL、CI run、未支付/已支付 demo sessionId，并完成线上 smoke 验收。
 
 ## 下一步开工清单
 
