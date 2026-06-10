@@ -7,7 +7,7 @@
 当前状态：
 
 - 设计阶段复盘：已完成。
-- 实现阶段复盘：核心代码、测试、CI workflow 已补充；部署后的 public URL、CI 线上通过状态和 demo sessionId 待最终更新。
+- 实现阶段复盘：核心代码、测试、CI workflow、Supabase/Vercel 部署、public URL 和 demo sessionId 均已补充。
 
 ## 证据链
 
@@ -240,16 +240,9 @@ API 字段级裁剪，非会员响应根本不返回 protected fields
 - 只要 AI 生成前端方案，我会检查它是否破坏后端鉴权边界，例如把 protected data 先返回给前端再遮罩。
 - 只要 AI 给出“已完成”式表述，我会要求用命令、测试、线上链接或文档证据支撑。
 
-## 实现阶段待补充
+## 实现阶段记录
 
-代码实现完成后，需要补充：
-
-- AI 如何生成/修正 Prisma migration。
-- AI 如何辅助生成测试数据工厂。
-- AI 如何辅助写算法边界测试。
-- AI 哪些测试断言被人工修改过。
-- AI 在部署或 CI 配置中给出过哪些错误建议，如何修正。
-- 最终 README 中引用的测试通过状态。
+代码实现完成后，复盘补充以下证据：
 
 当前实现阶段记录：
 
@@ -257,18 +250,18 @@ API 字段级裁剪，非会员响应根本不返回 protected fields
 - 测试数据与边界：已实现 algorithm/validation/access 单元测试，覆盖身高、体重、年龄、目标体重、非法数值、未知字段、跨 step 字段和原型污染。
 - 集成流程：已实现 quiz/payment 集成测试，覆盖 create/resume、分步保存、乱序、重复、并发冲突、`/pay` 幂等和 preview/full 转换。
 - E2E：已实现 Playwright 测试，覆盖完整 funnel -> preview -> `/pay` -> full，以及刷新恢复。
-- CI/deploy：已加入常规 CI workflow 和手动 production-maintenance workflow；公网部署后仍需填入真实 URL、CI badge 状态和 demo sessionId。
+- CI/deploy：已加入常规 CI workflow 和手动 production-maintenance workflow；公网地址为 `https://healthgate-one.vercel.app`，README 已写入未支付/已支付 demo sessionId。
 
-实现阶段记录模板：
+实现阶段记录：
 
 | 阶段 | AI 做了什么 | 我如何审查 | 最终证据 |
 | --- | --- | --- | --- |
-| Prisma migration | 待补 | 待补 | migration 文件、`prisma validate` |
-| 算法与验证 | 待补 | 待补 | unit tests |
-| session service | 待补 | 待补 | integration tests |
-| access cropper | 待补 | 待补 | protected field tests |
-| `/pay` | 待补 | 待补 | payment integration/E2E |
-| CI/deploy | 待补 | 待补 | GitHub Actions run、public URL |
+| Prisma migration | 根据 schema 生成初始 migration，并同步 Supabase CLI migration | 在临时 PostgreSQL 和 Supabase 上分别执行 migration，修正 SQL BOM 问题 | `prisma/migrations/**`、`supabase/migrations/20260610000000_init.sql`、CI migrate |
+| 算法与验证 | 辅助生成 BMI/BMR/TDEE、目标日期和边界测试用例 | 检查目标体重规则、非法数值、字符串数字和健康数据同意边界 | `algorithm.unit.test.ts`、`validation.unit.test.ts` |
+| session service | 辅助拆分 create/resume、step patch、submit、stale result 行为 | 用 integration tests 验证乱序、重复、并发和恢复响应结构 | `session.integration.test.ts` |
+| access cropper | 辅助定义 preview/full 字段边界和 protected field 列表 | 要求 preview 递归扫描 key，不能只做前端遮罩 | `result-access.unit.test.ts`、`pay.integration.test.ts` |
+| `/pay` | 辅助设计 mock payment、subscription upsert 和 idempotencyKey 语义 | 修正主路径必须是题面要求的 `POST /pay`，验证 failed/冲突/重放 | `pay.integration.test.ts`、`tests/e2e/result-access.spec.ts` |
+| CI/deploy | 辅助设计 GitHub Actions、Supabase/Vercel 部署路径和 README smoke runbook | 将 production migration 从 Prisma direct 调整为 Supabase CLI，避免 direct IPv6/连接不稳定 | CI run、Production Maintenance run、`https://healthgate-one.vercel.app` |
 
 补写时必须遵守：
 

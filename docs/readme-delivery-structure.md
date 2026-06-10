@@ -420,16 +420,16 @@ README 简短摘要，详细内容链接到：
 | Known non-goals | 明确说明不做真实支付、医学诊断等范围 |
 | 占位符 | 部署后不得保留 `<uuid>`、`https://...`、`待补` 等未替换内容 |
 
-## 当前 README 待补项
+## 当前 README 完成状态
 
 | 项 | 当前状态 |
 | --- | --- |
-| Live URL | 待部署后补 |
-| CI badge | 待 workflow 建成后补 |
-| demo sessionId | 待 seed 实现并部署后补 |
-| `/pay` 完整 cURL | API 已设计，待实现后验证 |
-| 测试覆盖结果 | 测试实现后补 |
-| AI 复盘最终版 | 初稿已设计，最终实现后更新 |
+| Live URL | 已回填：`https://healthgate-one.vercel.app` |
+| CI badge | 已指向 GitHub Actions workflow，最新 CI 已通过 |
+| demo sessionId | 已回填未支付和已支付两个固定 demo session |
+| `/pay` 完整 cURL | 已提供完整可复制流程，并在线上验证 preview -> full |
+| 测试覆盖结果 | 已写明 unit/integration/E2E/CI 覆盖范围和 non-goals |
+| AI 复盘最终版 | 已补充实现、测试、部署阶段记录和被否决方案 |
 
 ## README 完成标准
 

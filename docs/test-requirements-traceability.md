@@ -249,11 +249,11 @@ README.md
 
 | 命令 | 用途 | 当前状态 |
 | --- | --- | --- |
-| `npm test` | 一键运行核心自动化测试 | 已有脚本，待补真实测试 |
+| `npm test` | 一键运行核心自动化测试 | 已实现，覆盖 unit + integration |
 | `npm run typecheck` | TypeScript 类型检查 | 已有 |
 | `npm run build` | Next build + Prisma generate | 已有 |
-| `npm run test:e2e` | Playwright E2E | 待添加 |
-| `npm run test:ci` | CI 聚合命令 | 待添加 |
+| `npm run test:e2e` | Playwright E2E | 已实现 |
+| `npm run test:ci` | CI 聚合命令 | 已实现 |
 
 CI 必须运行：
 
