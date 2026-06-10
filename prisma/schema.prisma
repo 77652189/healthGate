@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum QuizSessionStatus {
+  DRAFT
+  COMPLETED
+}
+
+enum QuizStepKey {
+  PROFILE
+  GOAL
+  BODY
+  ACTIVITY
+  HABITS
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum GoalType {
+  LOSE_WEIGHT
+  BUILD_STRENGTH
+  IMPROVE_FLEXIBILITY
+  REDUCE_STRESS
+  IMPROVE_POSTURE
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+enum ExerciseFrequency {
+  NEVER
+  MONTHLY
+  ONE_TWO_WEEK
+  THREE_FOUR_WEEK
+  DAILY
+}
+
+enum AssessmentResultStatus {
+  CURRENT
+  STALE
+}
+
+enum GoalDirection {
+  LOSS
+  MAINTAIN
+  GAIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+}
+
+enum PaymentEventStatus {
+  SUCCEEDED
+  FAILED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  anonymousKey String?       @unique
+  sessions     QuizSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model QuizSession {
+  id                  String             @id @default(uuid())
+  userId              String?
+  user                User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  flowTopic           String             @default("healthgate_weight_management_v1")
+  status              QuizSessionStatus  @default(DRAFT)
+  version             Int                @default(1)
+  currentStep         QuizStepKey        @default(PROFILE)
+  completedSteps      Json               @default("[]")
+  answersJson         Json               @default("{}")
+  gender              Gender?
+  goalType            GoalType?
+  age                 Int?
+  heightCm            Float?
+  currentWeightKg     Float?
+  targetWeightKg      Float?
+  activityLevel       ActivityLevel?
+  exerciseFrequency   ExerciseFrequency?
+  bodyZones           Json               @default("[]")
+  physicalLimitations Json               @default("[]")
+  healthDataConsent   Boolean            @default(false)
+  healthDataConsentAt DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  results             AssessmentResult[]
+  subscription        Subscription?
+  paymentEvents       PaymentEvent[]
+  stepEvents          StepEvent[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([flowTopic, status])
+}
+
+model AssessmentResult {
+  id                    String                 @id @default(uuid())
+  sessionId             String
+  session               QuizSession            @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sourceSessionVersion  Int
+  algorithmVersion      String
+  status                AssessmentResultStatus @default(CURRENT)
+  bmi                   Float
+  bmiCategory           String
+  bmr                   Float
+  tdee                  Float
+  recommendedCalories   Int
+  goalDirection         GoalDirection
+  weeklyDeltaKg         Float
+  targetDate            DateTime
+  publicSummary         String
+  publicRecommendations Json
+  caloriePlan           Json
+  projectionCurve       Json
+  invalidatedAt         DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@unique([sessionId, sourceSessionVersion])
+  @@index([sessionId, status])
+}
+
+model Subscription {
+  id          String             @id @default(uuid())
+  sessionId   String             @unique
+  session     QuizSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  status      SubscriptionStatus @default(ACTIVE)
+  activeFrom  DateTime?
+  activeUntil DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model PaymentEvent {
+  id             String             @id @default(uuid())
+  sessionId      String
+  session        QuizSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  idempotencyKey String
+  provider       String             @default("mock")
+  status         PaymentEventStatus
+  payload        Json               @default("{}")
+  createdAt      DateTime           @default(now())
+
+  @@unique([provider, idempotencyKey])
+  @@index([sessionId])
+}
+
+model StepEvent {
+  id            String      @id @default(uuid())
+  sessionId     String
+  session       QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepKey       QuizStepKey
+  versionBefore Int
+  versionAfter  Int
+  payload       Json
+  createdAt     DateTime    @default(now())
+
+  @@index([sessionId, stepKey])
+  @@index([sessionId, createdAt])
+}

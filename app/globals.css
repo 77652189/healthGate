@@ -1,0 +1,295 @@
+:root {
+  --bg: #f4f1ea;
+  --panel: #fffdf8;
+  --ink: #1d2528;
+  --muted: #657174;
+  --line: #d9ded8;
+  --teal: #0f766e;
+  --teal-dark: #0b4f4a;
+  --rose: #b45363;
+  --amber: #b7791f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.shell {
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1.15fr);
+  min-height: calc(100vh - 56px);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.visualPanel {
+  position: relative;
+  min-height: 420px;
+  background-image: url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80");
+  background-position: center;
+  background-size: cover;
+}
+
+.imageWash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 39, 39, 0.16), rgba(7, 39, 39, 0.72));
+}
+
+.visualCopy {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 28px;
+  color: white;
+}
+
+.visualCopy span,
+.eyebrow {
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.visualCopy span {
+  color: #b6f0e7;
+}
+
+.visualCopy strong {
+  display: block;
+  margin-top: 10px;
+  max-width: 360px;
+  font-size: 30px;
+  line-height: 1.14;
+}
+
+.funnelPanel,
+.resultWorkspace {
+  padding: 36px;
+}
+
+.topbar,
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+h1 {
+  margin: 6px 0 0;
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 19px;
+  letter-spacing: 0;
+}
+
+.progressRing {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 2px solid var(--teal);
+  color: var(--teal-dark);
+  font-weight: 700;
+}
+
+.progressTrack {
+  height: 8px;
+  margin: 24px 0 28px;
+  background: #e5e2da;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+}
+
+.gridTwo,
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gridOne {
+  display: grid;
+  gap: 12px;
+}
+
+.choice,
+.ghost,
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.choice {
+  justify-content: flex-start;
+  padding: 14px 16px;
+}
+
+.choiceActive {
+  border-color: var(--teal);
+  background: #e6f3ef;
+  color: var(--teal-dark);
+}
+
+.formGrid label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  padding: 0 12px;
+  color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.primary {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: white;
+  padding: 0 18px;
+}
+
+.ghost {
+  padding: 0 16px;
+}
+
+.primary:disabled,
+.ghost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 18px 0 0;
+  color: var(--rose);
+  font-weight: 700;
+}
+
+.review,
+.paywall,
+.summaryBlock {
+  border: 1px solid var(--line);
+  padding: 22px;
+  background: #fff;
+}
+
+.resultWorkspace {
+  max-width: 980px;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.metricBand,
+.fullGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.metricBand div,
+.fullGrid div,
+.fullGrid pre {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 18px;
+}
+
+.metricBand span,
+.fullGrid span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.metricBand strong,
+.fullGrid strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+}
+
+.fullGrid pre {
+  grid-column: 1 / -1;
+  overflow: auto;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding: 0;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+  }
+
+  .visualPanel {
+    min-height: 260px;
+  }
+
+  .funnelPanel,
+  .resultWorkspace {
+    padding: 22px;
+  }
+
+  .gridTwo,
+  .formGrid,
+  .metricBand,
+  .fullGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
