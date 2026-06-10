@@ -10,7 +10,7 @@ HealthGate 是一个健康测评 funnel 全栈挑战项目，重点展示分步�
 
 - Live URL：https://healthgate-one.vercel.app
 - GitHub Repo：https://github.com/77652189/healthGate
-- CI Status：https://github.com/77652189/healthGate/actions/runs/27260027467
+- CI Status：https://github.com/77652189/healthGate/actions/workflows/ci.yml
 - UNPAID_DEMO_SESSION_ID：`00000000-0000-4000-8000-000000000001`
 - PAID_DEMO_SESSION_ID：`00000000-0000-4000-8000-000000000002`
 

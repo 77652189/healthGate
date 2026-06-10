@@ -469,7 +469,7 @@ README 必须说明完整 E2E 运行方式。
 - Supabase project：已创建并完成 migration。
 - Migration：已生成并同步到 `supabase/migrations/20260610000000_init.sql`。
 - Demo seed：已执行，README 已写入未支付/已支付 demo sessionId。
-- CI workflow：已通过，run 为 https://github.com/77652189/healthGate/actions/runs/27260027467。
+- CI workflow：已通过，最新状态见 https://github.com/77652189/healthGate/actions/workflows/ci.yml。
 - Production maintenance workflow：已切换为 Supabase CLI migration。
 - Public URL：已写入 README。
 - 上线 smoke：已通过 `/api/health`、demo preview/full、全新 session `/pay` 闭环验证。
